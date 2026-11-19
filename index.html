@@ -1,0 +1,3735 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Groq LLM Playground | S&AI Essentials</title>
+  <meta name="description"
+    content="A professional, dark-themed LLM Playground powered by Groq API with real-time prompt analysis, speed analytics, and token metrics.">
+
+  <!-- Markdown & Code Syntax Highlighting -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & THEME SETUP (Groq Professional Dark Theme)
+       ========================================================================== */
+    :root {
+      --bg-canvas: #090a0f;
+      --bg-panel: #0f1218;
+      --bg-card: #151922;
+      --bg-card-hover: #1b202c;
+      --bg-input: #11141c;
+      --bg-input-focus: #161a24;
+
+      --border-subtle: #1e2430;
+      --border-medium: #2a3344;
+      --border-highlight: #3b475d;
+
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --accent-groq: #f55036;
+      --accent-groq-hover: #ff644d;
+      --accent-groq-glow: rgba(245, 80, 54, 0.22);
+
+      --status-live: #10b981;
+      --status-live-glow: rgba(16, 185, 129, 0.3);
+      --status-warn: #f59e0b;
+      --status-error: #ef4444;
+
+      --tag-zero: #38bdf8;
+      --tag-zero-bg: rgba(56, 189, 248, 0.12);
+      --tag-one: #c084fc;
+      --tag-one-bg: rgba(192, 132, 252, 0.12);
+      --tag-few: #fb923c;
+      --tag-few-bg: rgba(251, 146, 60, 0.12);
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      --header-height: 56px;
+      --sidebar-width: 320px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-medium);
+      border-radius: var(--radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-highlight);
+    }
+
+    code,
+    pre {
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== */
+    .top-navbar {
+      height: var(--header-height);
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .groq-icon-badge {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #f55036, #e11d48);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px var(--accent-groq-glow);
+    }
+
+    .groq-icon-badge svg {
+      width: 16px;
+      height: 16px;
+      fill: #ffffff;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-title .groq-word {
+      color: var(--text-main);
+    }
+
+    .brand-title .pg-word {
+      color: var(--accent-groq);
+      font-weight: 600;
+    }
+
+    .badge-assignment {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(245, 80, 54, 0.12);
+      color: var(--accent-groq);
+      border: 1px solid rgba(245, 80, 54, 0.25);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-center-model {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+    }
+
+    .nav-center-model .model-label {
+      color: var(--text-muted);
+    }
+
+    .nav-center-model .model-value {
+      color: var(--text-main);
+      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Mobile drawer toggles */
+    .btn-drawer-toggle {
+      display: none;
+    }
+
+    /* API Status Pill */
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--text-dim);
+    }
+
+    .status-pill.live .status-dot {
+      background-color: var(--status-live);
+      box-shadow: 0 0 8px var(--status-live-glow);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    .status-pill.live {
+      border-color: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+    }
+
+    .status-pill.error .status-dot {
+      background-color: var(--status-error);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+
+    .status-pill.error {
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .status-pill.testing .status-dot {
+      background-color: var(--status-warn);
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+      }
+    }
+
+    /* Standard Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-highlight);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-groq {
+      background: var(--accent-groq);
+      border-color: var(--accent-groq);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .btn-groq:hover {
+      background: var(--accent-groq-hover);
+      border-color: var(--accent-groq-hover);
+      box-shadow: 0 0 14px var(--accent-groq-glow);
+    }
+
+    .btn-danger {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--status-error);
+    }
+
+    .btn-icon-only {
+      padding: 6px;
+      width: 32px;
+      height: 32px;
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       MAIN APP LAYOUT (3 COLUMNS)
+       ========================================================================== */
+    .app-main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Overlay backdrop for mobile sidebars */
+    .drawer-backdrop {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 25;
+    }
+
+    .drawer-backdrop.active {
+      display: block;
+    }
+
+    /* Panels shared styling */
+    .panel-left,
+    .panel-right {
+      width: var(--sidebar-width);
+      background-color: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 20;
+    }
+
+    .panel-left {
+      border-right: 1px solid var(--border-subtle);
+    }
+
+    .panel-right {
+      border-left: 1px solid var(--border-subtle);
+      width: 330px;
+    }
+
+    .panel-header {
+      padding: 14px 16px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .panel-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Control Groups */
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .control-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-value-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-groq);
+      background: var(--bg-card);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .control-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.35;
+    }
+
+    /* Form Controls */
+    .input-text,
+    .input-select,
+    .input-textarea {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      color: var(--text-main);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .input-text:focus,
+    .input-select:focus,
+    .input-textarea:focus {
+      border-color: var(--accent-groq);
+      background-color: var(--bg-input-focus);
+      box-shadow: 0 0 0 2px var(--accent-groq-glow);
+    }
+
+    .input-select {
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .input-select option {
+      background-color: var(--bg-panel);
+      color: var(--text-main);
+    }
+
+    .input-textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: var(--font-sans);
+      line-height: 1.4;
+    }
+
+    /* Range Sliders */
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-range {
+      flex: 1;
+      height: 4px;
+      background: var(--border-medium);
+      border-radius: var(--radius-full);
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    .input-range::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent-groq);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-groq-glow);
+      transition: transform 0.1s ease;
+    }
+
+    .input-range::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Toggle Switch */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border-medium);
+      transition: 0.2s;
+      border-radius: 20px;
+    }
+
+    .slider-toggle::before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #ffffff;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider-toggle {
+      background-color: var(--accent-groq);
+    }
+
+    input:checked+.slider-toggle::before {
+      transform: translateX(16px);
+    }
+
+    input:disabled+.slider-toggle {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Key Input container */
+    .key-input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .key-input-container .input-text {
+      padding-right: 36px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .key-toggle-btn {
+      position: absolute;
+      right: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .key-toggle-btn:hover {
+      color: var(--text-main);
+    }
+
+    .key-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input {
+      accent-color: var(--accent-groq);
+      cursor: pointer;
+    }
+
+    /* Security callout card */
+    .security-callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .security-callout svg {
+      width: 16px;
+      height: 16px;
+      color: var(--status-live);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ==========================================================================
+       CENTER PANEL: PLAYGROUND & CHAT INTERFACE
+       ========================================================================== */
+    .panel-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-canvas);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chat-messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Empty state */
+    .empty-state-wrap {
+      max-width: 680px;
+      margin: auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 30px 20px;
+    }
+
+    .empty-logo-glow {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(245, 80, 54, 0.2), rgba(225, 29, 72, 0.1));
+      border: 1px solid rgba(245, 80, 54, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .empty-logo-glow svg {
+      width: 28px;
+      height: 28px;
+      fill: var(--accent-groq);
+    }
+
+    .empty-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.4px;
+    }
+
+    .empty-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    .starter-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      width: 100%;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .starter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .starter-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-highlight);
+      transform: translateY(-2px);
+    }
+
+    .starter-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .starter-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .starter-card-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .starter-card-snippet {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Message Bubbles */
+    .message-row {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .message-avatar.user-avatar {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid var(--border-medium);
+    }
+
+    .message-avatar.assistant-avatar {
+      background: linear-gradient(135deg, #f55036, #e11d48);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--accent-groq-glow);
+    }
+
+    .message-body-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .message-header-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .message-sender {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .message-meta {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .message-bubble {
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      line-height: 1.6;
+      font-size: 13px;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .message-bubble.user-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      color: var(--text-main);
+    }
+
+    .message-bubble.assistant-bubble {
+      background: #0d1017;
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--accent-groq);
+      color: var(--text-main);
+    }
+
+    /* Reasoning / Thought Box */
+    .thought-details {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .thought-summary {
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .thought-summary:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .thought-content {
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #94a3b8;
+      font-style: italic;
+      font-family: var(--font-mono);
+      line-height: 1.5;
+      border-top: 1px solid var(--border-subtle);
+      white-space: pre-wrap;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* Markdown inside assistant responses */
+    .markdown-body {
+      color: var(--text-main);
+    }
+
+    .markdown-body p {
+      margin-bottom: 10px;
+    }
+
+    .markdown-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3 {
+      margin-top: 14px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .markdown-body ul,
+    .markdown-body ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .markdown-body li {
+      margin-bottom: 4px;
+    }
+
+    .markdown-body blockquote {
+      border-left: 3px solid var(--border-highlight);
+      padding-left: 12px;
+      color: var(--text-muted);
+      margin: 8px 0;
+      font-style: italic;
+    }
+
+    .markdown-body table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+
+    .markdown-body th,
+    .markdown-body td {
+      border: 1px solid var(--border-medium);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .markdown-body th {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .markdown-body :not(pre)>code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 5px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      color: #fca5a5;
+    }
+
+    /* Code block wrapper with header & copy button */
+    .code-block-wrapper {
+      position: relative;
+      margin: 12px 0;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-medium);
+      background: #090b10;
+    }
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 12px;
+      background: #11141c;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .code-block-header .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .code-block-header .copy-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .code-block-wrapper pre {
+      margin: 0;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    /* Message Actions Footer */
+    .message-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .msg-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+
+    .msg-action-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card);
+    }
+
+    /* Streaming Cursor */
+    .streaming-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background-color: var(--accent-groq);
+      margin-left: 3px;
+      vertical-align: text-bottom;
+      animation: blink-cursor 0.9s infinite;
+    }
+
+    @keyframes blink-cursor {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Bottom Prompt Input Area */
+    .chat-input-wrapper {
+      padding: 16px 24px;
+      background-color: var(--bg-panel);
+      border-top: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .chat-input-box {
+      max-width: 860px;
+      margin: 0 auto;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .chat-input-box:focus-within {
+      border-color: var(--accent-groq);
+      box-shadow: 0 0 0 2px var(--accent-groq-glow);
+    }
+
+    .prompt-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: inherit;
+      resize: none;
+      min-height: 58px;
+      max-height: 220px;
+      line-height: 1.5;
+    }
+
+    .prompt-textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    .input-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+    }
+
+    .input-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .kbd-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+    }
+
+    .input-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       RIGHT SIDEBAR: PROMPT ANALYSIS & SPEED / TOKEN ANALYTICS
+       ========================================================================== */
+    .panel-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .panel-section-title svg {
+      width: 13px;
+      height: 13px;
+      color: var(--accent-groq);
+    }
+
+    /* Classification Card */
+    .analysis-hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hero-classification-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .classification-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .classification-badge.zero-shot {
+      background: var(--tag-zero-bg);
+      color: var(--tag-zero);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .classification-badge.one-shot {
+      background: var(--tag-one-bg);
+      color: var(--tag-one);
+      border: 1px solid rgba(192, 132, 252, 0.3);
+    }
+
+    .classification-badge.few-shot {
+      background: var(--tag-few-bg);
+      color: var(--tag-few);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+    }
+
+    .example-counter {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .classification-explanation {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Detected Pairs Container */
+    .detected-pairs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 2px;
+    }
+
+    .detected-pair-item {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pair-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--accent-groq);
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .pair-in,
+    .pair-out {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pair-in span,
+    .pair-out span {
+      color: var(--text-dim);
+    }
+
+    /* Technique Grid */
+    .techniques-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .technique-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: all 0.15s ease;
+    }
+
+    .technique-chip.detected {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .technique-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .technique-status {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .technique-chip.detected .technique-status {
+      color: var(--status-live);
+    }
+
+    .technique-match {
+      font-size: 9px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Speed Analytics Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-card.full-width {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(245, 80, 54, 0.08), rgba(21, 25, 34, 0.9));
+      border-color: rgba(245, 80, 54, 0.25);
+    }
+
+    .metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+    }
+
+    .metric-card.full-width .metric-value {
+      color: var(--accent-groq);
+      font-size: 22px;
+    }
+
+    .metric-unit {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    /* Token Usage Card */
+    .token-usage-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .token-breakdown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .token-breakdown-row .tok-name {
+      color: var(--text-muted);
+    }
+
+    .token-breakdown-row .tok-val {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .context-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .context-bar-track {
+      height: 4px;
+      width: 100%;
+      background: var(--border-medium);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .context-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-groq);
+      transition: width 0.3s ease;
+    }
+
+    .context-label-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+       VIEW CODE MODAL DIALOG
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-window {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 760px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modal-pop {
+      from {
+        transform: scale(0.96);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 18px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+    }
+
+    .modal-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .modal-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .modal-tab-btn.active {
+      color: var(--text-main);
+      background: var(--bg-panel);
+      border-color: var(--border-subtle);
+      font-weight: 600;
+    }
+
+    .modal-code-wrap {
+      flex: 1;
+      padding: 16px 18px;
+      overflow-y: auto;
+      background: #090b10;
+    }
+
+    .modal-code-wrap pre {
+      margin: 0;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      line-height: 1.5;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+    }
+
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+    }
+
+    .modal-note {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ==========================================================================
+       TOAST NOTIFICATION SYSTEM
+       ========================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 150;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      animation: toast-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 360px;
+    }
+
+    .toast.success {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .toast.success svg {
+      color: var(--status-live);
+    }
+
+    .toast.error {
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .toast.error svg {
+      color: var(--status-error);
+    }
+
+    .toast.info {
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .toast.info svg {
+      color: var(--tag-zero);
+    }
+
+    @keyframes toast-in {
+      from {
+        transform: translateY(12px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .btn-drawer-toggle.analytics-toggle {
+        display: inline-flex;
+      }
+
+      .panel-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 30;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+      }
+
+      .panel-right.open {
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .btn-drawer-toggle.config-toggle {
+        display: inline-flex;
+      }
+
+      .panel-left {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 30;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+      }
+
+      .panel-left.open {
+        transform: translateX(0);
+      }
+
+      .nav-center-model {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="top-navbar">
+    <div class="brand-section">
+      <!-- Mobile Config Drawer Toggle -->
+      <button type="button" class="btn btn-icon-only btn-drawer-toggle config-toggle" id="btnToggleLeftDrawer"
+        title="Toggle Configuration Panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="brand-logo-wrap">
+        <div class="groq-icon-badge">
+          <!-- Groq Lightning SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <span class="groq-word">GROQ</span>
+          <span class="pg-word">PLAYGROUND</span>
+        </div>
+      </div>
+      <span class="badge-assignment">S&amp;AI Assignment</span>
+    </div>
+
+    <!-- Active Model Display -->
+    <div class="nav-center-model" id="navModelDisplay" title="Active Model">
+      <span class="model-label">Model:</span>
+      <span class="model-value" id="navModelName">llama-3.3-70b-versatile</span>
+    </div>
+
+    <!-- Status & Action Buttons -->
+    <div class="nav-actions">
+      <!-- Live Status Pill -->
+      <div class="status-pill" id="apiStatusPill" title="Connection status to api.groq.com">
+        <span class="status-dot"></span>
+        <span id="apiStatusText">Not Connected</span>
+      </div>
+
+      <!-- View Code Button -->
+      <button type="button" class="btn" id="btnViewCode" title="Export current setup as Python, JS, or cURL code">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>View Code</span>
+      </button>
+
+      <!-- Reset Conversation Button -->
+      <button type="button" class="btn btn-danger" id="btnResetTop" title="Clear current chat and analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        </svg>
+        <span>Reset</span>
+      </button>
+
+      <!-- Mobile Analytics Drawer Toggle -->
+      <button type="button" class="btn btn-icon-only btn-drawer-toggle analytics-toggle" id="btnToggleRightDrawer"
+        title="Toggle Analytics Panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN APP LAYOUT (3 COLUMNS)
+       ========================================================================== -->
+  <main class="app-main">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <!-- COLUMN A: LEFT SIDEBAR – CONFIGURATION PANEL -->
+    <aside class="panel-left" id="panelLeft">
+      <div class="panel-header">
+        <span>Configuration</span>
+        <span style="font-size: 10px; color: var(--text-dim);">API &amp; Parameters</span>
+      </div>
+
+      <div class="panel-content">
+
+        <!-- 1. Groq API Key -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="apiKeyInput">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Groq API Key
+            </label>
+          </div>
+          <div class="key-input-container">
+            <input type="password" id="apiKeyInput" class="input-text" placeholder="gsk_..." autocomplete="off">
+            <button type="button" class="key-toggle-btn" id="btnToggleKeyVisibility" title="Show/Hide Key">
+              <svg id="eyeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="key-actions-row">
+            <label class="checkbox-label" title="Stores your key strictly in this tab's sessionStorage">
+              <input type="checkbox" id="checkRememberKey">
+              <span>Remember in tab</span>
+            </label>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn" id="btnTestKey"
+                style="padding: 3px 8px; font-size: 11px;">Verify</button>
+              <button type="button" class="btn btn-danger" id="btnClearKey"
+                style="padding: 3px 8px; font-size: 11px;">Clear</button>
+            </div>
+          </div>
+
+          <!-- Security note -->
+          <div class="security-callout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span><strong>Zero-Server Architecture:</strong> Your API key never leaves your browser. All requests are
+              dispatched directly to <code>api.groq.com</code>.</span>
+          </div>
+        </div>
+
+        <!-- 2. Model Selection -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="modelSelect">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m18 16 4-4-4-4"></path>
+                <path d="m6 8-4 4 4 4"></path>
+                <path d="m14.5 4-5 16"></path>
+              </svg>
+              Model
+            </label>
+            <button type="button" class="btn" id="btnFetchModels" style="padding: 1px 6px; font-size: 10px;"
+              title="Query Groq API for currently active models">Refresh</button>
+          </div>
+          <select id="modelSelect" class="input-select">
+            <optgroup label="Flagship &amp; Versatile">
+              <option value="llama-3.3-70b-versatile" selected>llama-3.3-70b-versatile (Meta 70B, 128k)</option>
+              <option value="llama-3.1-8b-instant">llama-3.1-8b-instant (Fastest, 128k)</option>
+            </optgroup>
+            <optgroup label="Reasoning Models">
+              <option value="deepseek-r1-distill-llama-70b">deepseek-r1-distill-llama-70b (CoT Reasoning)</option>
+              <option value="deepseek-r1-distill-qwen-32b">deepseek-r1-distill-qwen-32b (CoT Reasoning)</option>
+            </optgroup>
+            <optgroup label="Other Architectures">
+              <option value="llama3-70b-8192">llama3-70b-8192 (Meta 70B, 8k)</option>
+              <option value="llama3-8b-8192">llama3-8b-8192 (Meta 8B, 8k)</option>
+              <option value="mixtral-8x7b-32768">mixtral-8x7b-32768 (Mistral MoE, 32k)</option>
+              <option value="gemma2-9b-it">gemma2-9b-it (Google Gemma 2, 8k)</option>
+            </optgroup>
+          </select>
+          <div class="control-hint" id="modelDescription">
+            Meta's latest 70B parameter model. Highly capable at complex reasoning, coding, and instruction following.
+          </div>
+        </div>
+
+        <!-- System Prompt -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="systemPrompt">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+              System Prompt
+            </label>
+          </div>
+          <textarea id="systemPrompt" class="input-textarea" rows="2"
+            placeholder="You are a helpful, concise AI assistant...">You are a helpful, smart, and concise AI assistant.</textarea>
+        </div>
+
+        <!-- 3. Temperature -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="tempSlider">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+              </svg>
+              Temperature
+            </label>
+            <span class="control-value-badge" id="tempValueDisplay">0.70</span>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="tempSlider" class="input-range" min="0" max="2" step="0.05" value="0.7">
+          </div>
+          <div class="control-hint">
+            Controls randomness: 0.0 is deterministic and focused; 1.0+ increases creativity and response diversity.
+          </div>
+        </div>
+
+        <!-- 4. Max Completion Tokens -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="maxTokensSlider">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+              Max Completion Tokens
+            </label>
+            <span class="control-value-badge" id="maxTokensValueDisplay">2048</span>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="maxTokensSlider" class="input-range" min="64" max="8192" step="64" value="2048">
+          </div>
+          <div class="control-hint">
+            Sets the upper bound on the number of generated tokens per response.
+          </div>
+        </div>
+
+        <!-- 5. Stop Sequences -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="stopSequencesInput">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <rect x="9" y="9" width="6" height="6"></rect>
+              </svg>
+              Stop Sequences
+            </label>
+          </div>
+          <input type="text" id="stopSequencesInput" class="input-text" placeholder="e.g. User:, ###, END">
+          <div class="control-hint">
+            Comma-separated strings that immediately halt generation when produced by the model (up to 4 sequences).
+          </div>
+        </div>
+
+        <!-- 6. Web Search -->
+        <div class="control-group">
+          <div class="toggle-row">
+            <label class="control-label" for="toggleWebSearch">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                </path>
+              </svg>
+              Web Search
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="toggleWebSearch" disabled>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+          <div class="control-hint" id="webSearchHint" style="color: var(--status-warn);">
+            Unsupported: Standard Groq chat endpoints do not natively support server-side web search. Disabled to
+            maintain genuine API transparency.
+          </div>
+        </div>
+
+        <!-- 7. Reasoning (CoT) -->
+        <div class="control-group">
+          <div class="toggle-row">
+            <label class="control-label" for="toggleReasoning">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54z">
+                </path>
+                <path
+                  d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54z">
+                </path>
+              </svg>
+              Reasoning (Chain of Thought)
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="toggleReasoning">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+          <div class="control-hint" id="reasoningHint">
+            Streams internal thought tokens into an expandable thinking container for DeepSeek-R1 models.
+          </div>
+        </div>
+
+        <!-- 8. Reset Button in Sidebar -->
+        <div style="margin-top: 8px;">
+          <button type="button" class="btn btn-danger" id="btnResetSidebar" style="width: 100%;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            </svg>
+            <span>Reset Conversation</span>
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- COLUMN B: CENTER PANEL – PLAYGROUND / CHAT INTERFACE -->
+    <section class="panel-center" id="panelCenter">
+
+      <!-- Chat Messages Scrollable Area -->
+      <div class="chat-messages-container" id="chatMessages">
+
+        <!-- Empty State View -->
+        <div class="empty-state-wrap" id="emptyState">
+          <div class="empty-logo-glow">
+            <svg viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
+          </div>
+          <h2 class="empty-title">Groq LLM Playground</h2>
+          <p class="empty-desc">
+            Directly test high-throughput models powered by Groq LPUs. Select a starter prompt below or type your
+            instruction to evaluate zero-shot, one-shot, and few-shot performance.
+          </p>
+
+          <!-- Starter Prompt Cards -->
+          <div class="starter-cards-grid">
+            <div class="starter-card" data-template="few-shot">
+              <div class="starter-card-header">
+                <span class="starter-card-title">Few-Shot Sentiment Classifier</span>
+                <span class="starter-card-tag"
+                  style="background: var(--tag-few-bg); color: var(--tag-few);">Few-Shot</span>
+              </div>
+              <span class="starter-card-snippet">Input: Great battery life! -&gt; Sentiment: Positive...</span>
+            </div>
+
+            <div class="starter-card" data-template="one-shot">
+              <div class="starter-card-header">
+                <span class="starter-card-title">One-Shot Code Converter</span>
+                <span class="starter-card-tag"
+                  style="background: var(--tag-one-bg); color: var(--tag-one);">One-Shot</span>
+              </div>
+              <span class="starter-card-snippet">Input: Python list comprehension -&gt; JS equivalent...</span>
+            </div>
+
+            <div class="starter-card" data-template="zero-shot">
+              <div class="starter-card-header">
+                <span class="starter-card-title">Zero-Shot System Architecture</span>
+                <span class="starter-card-tag"
+                  style="background: var(--tag-zero-bg); color: var(--tag-zero);">Zero-Shot</span>
+              </div>
+              <span class="starter-card-snippet">Design a fault-tolerant message queue with JSON schema...</span>
+            </div>
+
+            <div class="starter-card" data-template="cot-math">
+              <div class="starter-card-header">
+                <span class="starter-card-title">Chain-of-Thought Logic</span>
+                <span class="starter-card-tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">CoT
+                  Prompt</span>
+              </div>
+              <span class="starter-card-snippet">Think step by step to solve a probability puzzle...</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Prompt Input Area (Pinned to Bottom) -->
+      <div class="chat-input-wrapper">
+        <div class="chat-input-box">
+          <textarea id="promptInput" class="prompt-textarea"
+            placeholder="Type your prompt here... Press ⌘+Enter to submit, Shift+Enter for new line"
+            rows="2"></textarea>
+
+          <div class="input-toolbar">
+            <div class="input-stats">
+              <span id="charCountDisplay">0 chars</span>
+              <span>•</span>
+              <span id="tokenEstDisplay">~0 tokens</span>
+              <span class="kbd-shortcut" id="kbdShortcutHint">⌘ Enter</span>
+            </div>
+
+            <div class="input-actions-right">
+              <!-- Stop Generation Button (hidden unless generating) -->
+              <button type="button" class="btn btn-danger" id="btnStopGen" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                </svg>
+                <span>Stop</span>
+              </button>
+
+              <!-- Submit Button -->
+              <button type="button" class="btn btn-groq" id="btnSendPrompt">
+                <span>Run</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- COLUMN C: RIGHT SIDEBAR – PROMPT ANALYSIS AND ANALYTICS -->
+    <aside class="panel-right" id="panelRight">
+      <div class="panel-header">
+        <span>Prompt &amp; Analytics</span>
+        <span style="font-size: 10px; color: var(--text-dim);">Live Inspector</span>
+      </div>
+
+      <div class="panel-content">
+
+        <!-- 1. Prompt Engineering Analysis -->
+        <div class="control-group">
+          <div class="panel-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+              </polygon>
+            </svg>
+            Prompt Analysis
+          </div>
+
+          <div class="analysis-hero-card">
+            <div class="hero-classification-row">
+              <span class="classification-badge zero-shot" id="badgeClassification">ZERO-SHOT</span>
+              <span class="example-counter" id="exampleCountText">0 examples detected</span>
+            </div>
+            <p class="classification-explanation" id="classificationExplanation">
+              No demonstration examples detected. The model will rely exclusively on pre-trained parametric knowledge
+              (Zero-Shot Prompting).
+            </p>
+          </div>
+
+          <!-- Detected Examples List -->
+          <div id="detectedPairsWrap" style="display: none;">
+            <div
+              style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-top: 4px;">
+              Extracted Exemplars:
+            </div>
+            <div class="detected-pairs-list" id="detectedPairsList"></div>
+          </div>
+
+          <!-- Advanced Prompt Techniques Grid -->
+          <div
+            style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-top: 4px;">
+            Technique Detection:
+          </div>
+          <div class="techniques-grid">
+
+            <!-- Role Prompting -->
+            <div class="technique-chip" id="chipRole">
+              <div class="technique-name">
+                <span>Role Prompting</span>
+                <span class="technique-status" id="statusRole">No</span>
+              </div>
+              <span class="technique-match" id="matchRole">—</span>
+            </div>
+
+            <!-- Negative Constraints -->
+            <div class="technique-chip" id="chipNegative">
+              <div class="technique-name">
+                <span>Constraints</span>
+                <span class="technique-status" id="statusNegative">No</span>
+              </div>
+              <span class="technique-match" id="matchNegative">—</span>
+            </div>
+
+            <!-- Output Formatting -->
+            <div class="technique-chip" id="chipFormat">
+              <div class="technique-name">
+                <span>Formatting</span>
+                <span class="technique-status" id="statusFormat">No</span>
+              </div>
+              <span class="technique-match" id="matchFormat">—</span>
+            </div>
+
+            <!-- Chain of Thought -->
+            <div class="technique-chip" id="chipCoT">
+              <div class="technique-name">
+                <span>Chain of Thought</span>
+                <span class="technique-status" id="statusCoT">No</span>
+              </div>
+              <span class="technique-match" id="matchCoT">—</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. Speed Analytics -->
+        <div class="control-group">
+          <div class="panel-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Speed Analytics
+          </div>
+
+          <div class="metrics-grid">
+            <!-- Throughput -->
+            <div class="metric-card full-width">
+              <span class="metric-label">Throughput / Speed</span>
+              <div class="metric-value">
+                <span id="metricTokensPerSec">0.0</span>
+                <span class="metric-unit">tokens/sec</span>
+              </div>
+            </div>
+
+            <!-- Time to First Token -->
+            <div class="metric-card">
+              <span class="metric-label">TTFT (Latency)</span>
+              <div class="metric-value">
+                <span id="metricTTFT">—</span>
+                <span class="metric-unit">ms</span>
+              </div>
+            </div>
+
+            <!-- Total Generation Duration -->
+            <div class="metric-card">
+              <span class="metric-label">Total Duration</span>
+              <div class="metric-value">
+                <span id="metricDuration">—</span>
+                <span class="metric-unit">s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Token Usage -->
+        <div class="control-group">
+          <div class="panel-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Token Usage
+          </div>
+
+          <div class="token-usage-card">
+            <div class="token-breakdown-row">
+              <span class="tok-name">Prompt Tokens</span>
+              <span class="tok-val" id="tokPromptVal">—</span>
+            </div>
+            <div class="token-breakdown-row">
+              <span class="tok-name">Completion Tokens</span>
+              <span class="tok-val" id="tokCompVal">—</span>
+            </div>
+            <div class="token-breakdown-row" style="border-top: 1px solid var(--border-subtle); padding-top: 6px;">
+              <span class="tok-name" style="font-weight: 600; color: var(--text-main);">Total Tokens</span>
+              <span class="tok-val" id="tokTotalVal" style="color: var(--accent-groq);">—</span>
+            </div>
+
+            <div class="context-bar-wrap">
+              <div class="context-label-line">
+                <span>Context Window Utilization</span>
+                <span id="contextPctDisplay">0.0%</span>
+              </div>
+              <div class="context-bar-track">
+                <div class="context-bar-fill" id="contextBarFill"></div>
+              </div>
+              <div class="context-label-line" style="margin-top: 2px;">
+                <span id="tokVerifiedBadge" style="color: var(--text-dim); font-size: 9px;">Awaiting request</span>
+                <span id="contextLimitDisplay">/ 128,000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ==========================================================================
+       VIEW CODE MODAL DIALOG
+       ========================================================================== -->
+  <div class="modal-overlay" id="codeModalOverlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-groq)" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span class="modal-title">API Code Export</span>
+        </div>
+        <button type="button" class="btn btn-icon-only" id="btnCloseModal" title="Close Modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="6"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab-btn active" data-tab="curl">cURL</button>
+        <button type="button" class="modal-tab-btn" data-tab="python-sdk">Python (Groq SDK)</button>
+        <button type="button" class="modal-tab-btn" data-tab="python-req">Python (Requests)</button>
+        <button type="button" class="modal-tab-btn" data-tab="js-fetch">JavaScript (Fetch)</button>
+        <button type="button" class="modal-tab-btn" data-tab="node-sdk">Node.js (Groq SDK)</button>
+      </div>
+
+      <div class="modal-code-wrap">
+        <pre><code id="modalCodeDisplay" class="hljs"></code></pre>
+      </div>
+
+      <div class="modal-footer">
+        <span class="modal-note">⚠️ Note: Replace <code>YOUR_GROQ_API_KEY</code> with your real key in
+          production.</span>
+        <button type="button" class="btn btn-groq" id="btnCopyModalCode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span id="copyBtnText">Copy Code</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT APPLICATION LOGIC
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* --- Model Metadata & Capabilities --- */
+      const MODEL_DATA = {
+        'llama-3.3-70b-versatile': {
+          name: 'Llama 3.3 70B Versatile',
+          context: 128000,
+          supportsReasoning: false,
+          desc: "Meta's flagship 70B model. State-of-the-art reasoning, coding, and general intelligence with 128k context."
+        },
+        'llama-3.1-8b-instant': {
+          name: 'Llama 3.1 8B Instant',
+          context: 128000,
+          supportsReasoning: false,
+          desc: "Ultra-fast inference (700+ tokens/sec) suitable for low-latency tasks, summarization, and quick conversions."
+        },
+        'deepseek-r1-distill-llama-70b': {
+          name: 'DeepSeek R1 Distill Llama 70B',
+          context: 128000,
+          supportsReasoning: true,
+          desc: "DeepSeek R1 distilled into Llama 70B. Generates structured Chain-of-Thought reasoning steps for math and logic."
+        },
+        'deepseek-r1-distill-qwen-32b': {
+          name: 'DeepSeek R1 Distill Qwen 32B',
+          context: 128000,
+          supportsReasoning: true,
+          desc: "DeepSeek R1 distilled into Qwen 32B. High-density reasoning and mathematical problem-solving."
+        },
+        'llama3-70b-8192': {
+          name: 'Llama 3 70B (8k)',
+          context: 8192,
+          supportsReasoning: false,
+          desc: "Original Meta Llama 3 70B model with 8,192 token context window."
+        },
+        'llama3-8b-8192': {
+          name: 'Llama 3 8B (8k)',
+          context: 8192,
+          supportsReasoning: false,
+          desc: "Original Meta Llama 3 8B model with 8,192 token context window."
+        },
+        'mixtral-8x7b-32768': {
+          name: 'Mixtral 8x7B (32k)',
+          context: 32768,
+          supportsReasoning: false,
+          desc: "Mistral's Mixture-of-Experts (MoE) model. High throughput and strong multilingual capabilities."
+        },
+        'gemma2-9b-it': {
+          name: 'Gemma 2 9B IT',
+          context: 8192,
+          supportsReasoning: false,
+          desc: "Google's high-efficiency open model built from Gemini technology."
+        }
+      };
+
+      /* --- Application State --- */
+      const state = {
+        apiKey: '',
+        rememberInTab: false,
+        selectedModel: 'llama-3.3-70b-versatile',
+        temperature: 0.7,
+        maxTokens: 2048,
+        stopSequences: [],
+        systemPrompt: 'You are a helpful, smart, and concise AI assistant.',
+        reasoningEnabled: false,
+        conversation: [],
+        isGenerating: false,
+        abortController: null,
+        activeCodeTab: 'curl'
+      };
+
+      /* --- DOM Elements --- */
+      const els = {
+        apiKeyInput: document.getElementById('apiKeyInput'),
+        btnToggleKeyVisibility: document.getElementById('btnToggleKeyVisibility'),
+        eyeIcon: document.getElementById('eyeIcon'),
+        checkRememberKey: document.getElementById('checkRememberKey'),
+        btnTestKey: document.getElementById('btnTestKey'),
+        btnClearKey: document.getElementById('btnClearKey'),
+
+        modelSelect: document.getElementById('modelSelect'),
+        btnFetchModels: document.getElementById('btnFetchModels'),
+        modelDescription: document.getElementById('modelDescription'),
+        navModelName: document.getElementById('navModelName'),
+
+        systemPrompt: document.getElementById('systemPrompt'),
+        tempSlider: document.getElementById('tempSlider'),
+        tempValueDisplay: document.getElementById('tempValueDisplay'),
+        maxTokensSlider: document.getElementById('maxTokensSlider'),
+        maxTokensValueDisplay: document.getElementById('maxTokensValueDisplay'),
+        stopSequencesInput: document.getElementById('stopSequencesInput'),
+        toggleWebSearch: document.getElementById('toggleWebSearch'),
+        toggleReasoning: document.getElementById('toggleReasoning'),
+        reasoningHint: document.getElementById('reasoningHint'),
+
+        btnResetTop: document.getElementById('btnResetTop'),
+        btnResetSidebar: document.getElementById('btnResetSidebar'),
+        apiStatusPill: document.getElementById('apiStatusPill'),
+        apiStatusText: document.getElementById('apiStatusText'),
+
+        btnToggleLeftDrawer: document.getElementById('btnToggleLeftDrawer'),
+        btnToggleRightDrawer: document.getElementById('btnToggleRightDrawer'),
+        panelLeft: document.getElementById('panelLeft'),
+        panelRight: document.getElementById('panelRight'),
+        drawerBackdrop: document.getElementById('drawerBackdrop'),
+
+        chatMessages: document.getElementById('chatMessages'),
+        emptyState: document.getElementById('emptyState'),
+        promptInput: document.getElementById('promptInput'),
+        btnSendPrompt: document.getElementById('btnSendPrompt'),
+        btnStopGen: document.getElementById('btnStopGen'),
+        charCountDisplay: document.getElementById('charCountDisplay'),
+        tokenEstDisplay: document.getElementById('tokenEstDisplay'),
+        kbdShortcutHint: document.getElementById('kbdShortcutHint'),
+
+        // Right sidebar analytics
+        badgeClassification: document.getElementById('badgeClassification'),
+        exampleCountText: document.getElementById('exampleCountText'),
+        classificationExplanation: document.getElementById('classificationExplanation'),
+        detectedPairsWrap: document.getElementById('detectedPairsWrap'),
+        detectedPairsList: document.getElementById('detectedPairsList'),
+
+        chipRole: document.getElementById('chipRole'),
+        statusRole: document.getElementById('statusRole'),
+        matchRole: document.getElementById('matchRole'),
+        chipNegative: document.getElementById('chipNegative'),
+        statusNegative: document.getElementById('statusNegative'),
+        matchNegative: document.getElementById('matchNegative'),
+        chipFormat: document.getElementById('chipFormat'),
+        statusFormat: document.getElementById('statusFormat'),
+        matchFormat: document.getElementById('matchFormat'),
+        chipCoT: document.getElementById('chipCoT'),
+        statusCoT: document.getElementById('statusCoT'),
+        matchCoT: document.getElementById('matchCoT'),
+
+        metricTokensPerSec: document.getElementById('metricTokensPerSec'),
+        metricTTFT: document.getElementById('metricTTFT'),
+        metricDuration: document.getElementById('metricDuration'),
+        tokPromptVal: document.getElementById('tokPromptVal'),
+        tokCompVal: document.getElementById('tokCompVal'),
+        tokTotalVal: document.getElementById('tokTotalVal'),
+        contextPctDisplay: document.getElementById('contextPctDisplay'),
+        contextBarFill: document.getElementById('contextBarFill'),
+        contextLimitDisplay: document.getElementById('contextLimitDisplay'),
+        tokVerifiedBadge: document.getElementById('tokVerifiedBadge'),
+
+        // View Code Modal
+        btnViewCode: document.getElementById('btnViewCode'),
+        codeModalOverlay: document.getElementById('codeModalOverlay'),
+        btnCloseModal: document.getElementById('btnCloseModal'),
+        modalCodeDisplay: document.getElementById('modalCodeDisplay'),
+        btnCopyModalCode: document.getElementById('btnCopyModalCode'),
+        copyBtnText: document.getElementById('copyBtnText'),
+        toastContainer: document.getElementById('toastContainer')
+      };
+
+      /* ==========================================================================
+         INITIALIZATION & STORAGE LOGIC
+         ========================================================================== */
+      function init() {
+        const isMac = (navigator.userAgent || '').toUpperCase().indexOf('MAC') >= 0;
+        els.kbdShortcutHint.textContent = isMac ? '⌘ Enter' : 'Ctrl Enter';
+
+        try {
+          const storedKey = sessionStorage.getItem('groq_api_key');
+          if (storedKey) {
+            state.apiKey = storedKey;
+            state.rememberInTab = true;
+            els.apiKeyInput.value = storedKey;
+            els.checkRememberKey.checked = true;
+            updateConnectionStatus('live', 'Key Loaded');
+          }
+        } catch (e) {
+          console.warn('sessionStorage not available:', e);
+        }
+
+        if (window.marked) {
+          if (typeof marked.use === 'function') {
+            marked.use({ breaks: true, gfm: true });
+          } else if (typeof marked.setOptions === 'function') {
+            marked.setOptions({ breaks: true, gfm: true });
+          }
+        }
+
+        bindEvents();
+        updateModelUI();
+        analyzePrompt(els.promptInput.value);
+      }
+
+      /* ==========================================================================
+         TOAST NOTIFICATION HELPER
+         ========================================================================== */
+      function showToast(message, type = 'info', duration = 3500) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        let iconSvg = '';
+        if (type === 'success') {
+          iconSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        } else if (type === 'error') {
+          iconSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        } else {
+          iconSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+        }
+
+        toast.innerHTML = `${iconSvg}<span>${escapeHtml(message)}</span>`;
+        els.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          toast.style.transition = 'all 0.25s ease';
+          setTimeout(() => toast.remove(), 250);
+        }, duration);
+      }
+
+      function updateConnectionStatus(status, customText) {
+        els.apiStatusPill.className = 'status-pill ' + status;
+        if (status === 'live') {
+          els.apiStatusText.textContent = customText || 'Connected / Live';
+        } else if (status === 'testing') {
+          els.apiStatusText.textContent = customText || 'Validating...';
+        } else if (status === 'error') {
+          els.apiStatusText.textContent = customText || 'Error';
+        } else {
+          els.apiStatusText.textContent = customText || 'Not Connected';
+        }
+      }
+
+      /* ==========================================================================
+         DRAWER TOGGLES (RESPONSIVE SUPPORT)
+         ========================================================================== */
+      function toggleLeftDrawer() {
+        const isOpen = els.panelLeft.classList.toggle('open');
+        els.panelRight.classList.remove('open');
+        els.drawerBackdrop.classList.toggle('active', isOpen);
+      }
+
+      function toggleRightDrawer() {
+        const isOpen = els.panelRight.classList.toggle('open');
+        els.panelLeft.classList.remove('open');
+        els.drawerBackdrop.classList.toggle('active', isOpen);
+      }
+
+      function closeDrawers() {
+        els.panelLeft.classList.remove('open');
+        els.panelRight.classList.remove('open');
+        els.drawerBackdrop.classList.remove('active');
+      }
+
+      /* ==========================================================================
+         EVENT BINDINGS
+         ========================================================================== */
+      function bindEvents() {
+        if (els.btnToggleLeftDrawer) els.btnToggleLeftDrawer.addEventListener('click', toggleLeftDrawer);
+        if (els.btnToggleRightDrawer) els.btnToggleRightDrawer.addEventListener('click', toggleRightDrawer);
+        if (els.drawerBackdrop) els.drawerBackdrop.addEventListener('click', closeDrawers);
+
+        els.apiKeyInput.addEventListener('input', (e) => {
+          state.apiKey = e.target.value.trim();
+          if (state.rememberInTab && state.apiKey) {
+            sessionStorage.setItem('groq_api_key', state.apiKey);
+          }
+          if (!state.apiKey) {
+            updateConnectionStatus('not-connected');
+          }
+        });
+
+        els.btnToggleKeyVisibility.addEventListener('click', () => {
+          const isPassword = els.apiKeyInput.type === 'password';
+          els.apiKeyInput.type = isPassword ? 'text' : 'password';
+          els.eyeIcon.innerHTML = isPassword
+            ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+            : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        });
+
+        els.checkRememberKey.addEventListener('change', (e) => {
+          state.rememberInTab = e.target.checked;
+          if (state.rememberInTab && state.apiKey) {
+            sessionStorage.setItem('groq_api_key', state.apiKey);
+            showToast('Key saved to tab sessionStorage', 'info');
+          } else {
+            sessionStorage.removeItem('groq_api_key');
+          }
+        });
+
+        els.btnTestKey.addEventListener('click', verifyApiKeyWithGroq);
+
+        els.btnClearKey.addEventListener('click', () => {
+          state.apiKey = '';
+          els.apiKeyInput.value = '';
+          sessionStorage.removeItem('groq_api_key');
+          updateConnectionStatus('not-connected');
+          showToast('API Key cleared', 'info');
+        });
+
+        els.modelSelect.addEventListener('change', (e) => {
+          state.selectedModel = e.target.value;
+          updateModelUI();
+        });
+
+        els.btnFetchModels.addEventListener('click', fetchLiveGroqModels);
+
+        els.systemPrompt.addEventListener('input', (e) => {
+          state.systemPrompt = e.target.value;
+        });
+
+        els.tempSlider.addEventListener('input', (e) => {
+          state.temperature = parseFloat(e.target.value);
+          els.tempValueDisplay.textContent = state.temperature.toFixed(2);
+        });
+
+        els.maxTokensSlider.addEventListener('input', (e) => {
+          state.maxTokens = parseInt(e.target.value, 10);
+          els.maxTokensValueDisplay.textContent = state.maxTokens;
+        });
+
+        els.stopSequencesInput.addEventListener('input', (e) => {
+          const raw = e.target.value;
+          state.stopSequences = raw.split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+        });
+
+        els.toggleReasoning.addEventListener('change', (e) => {
+          state.reasoningEnabled = e.target.checked;
+        });
+
+        els.btnResetTop.addEventListener('click', resetConversation);
+        els.btnResetSidebar.addEventListener('click', resetConversation);
+
+        els.promptInput.addEventListener('input', () => {
+          const val = els.promptInput.value;
+          els.charCountDisplay.textContent = `${val.length} chars`;
+          const estTokens = val.trim() ? Math.ceil(val.trim().length / 4) : 0;
+          els.tokenEstDisplay.textContent = `~${estTokens} tokens`;
+
+          autoGrowTextarea(els.promptInput);
+          analyzePrompt(val);
+        });
+
+        els.promptInput.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+            e.preventDefault();
+            sendPrompt();
+          }
+        });
+
+        els.btnSendPrompt.addEventListener('click', sendPrompt);
+        els.btnStopGen.addEventListener('click', stopGeneration);
+
+        document.querySelectorAll('.starter-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const templateType = card.getAttribute('data-template');
+            loadPromptTemplate(templateType);
+          });
+        });
+
+        els.btnViewCode.addEventListener('click', openCodeModal);
+        els.btnCloseModal.addEventListener('click', closeCodeModal);
+        els.codeModalOverlay.addEventListener('click', (e) => {
+          if (e.target === els.codeModalOverlay) closeCodeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && els.codeModalOverlay.classList.contains('active')) {
+            closeCodeModal();
+          }
+        });
+
+        document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.activeCodeTab = btn.getAttribute('data-tab');
+            renderCodeSnippet();
+          });
+        });
+
+        els.btnCopyModalCode.addEventListener('click', () => {
+          const code = els.modalCodeDisplay.textContent;
+          navigator.clipboard.writeText(code).then(() => {
+            els.copyBtnText.textContent = 'Copied!';
+            showToast('Code copied to clipboard', 'success');
+            setTimeout(() => {
+              els.copyBtnText.textContent = 'Copy Code';
+            }, 2000);
+          }).catch(() => {
+            showToast('Failed to copy to clipboard', 'error');
+          });
+        });
+      }
+
+      function autoGrowTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 220) + 'px';
+      }
+
+      /* ==========================================================================
+         MODEL METADATA & UI UPDATE
+         ========================================================================== */
+      function updateModelUI() {
+        const modelId = state.selectedModel;
+        const meta = MODEL_DATA[modelId] || {
+          name: modelId,
+          context: 32768,
+          supportsReasoning: modelId.toLowerCase().includes('r1') || modelId.toLowerCase().includes('reasoning'),
+          desc: "Custom or newly added Groq model."
+        };
+
+        els.navModelName.textContent = modelId;
+        els.modelDescription.textContent = meta.desc;
+        els.contextLimitDisplay.textContent = `/ ${meta.context.toLocaleString()}`;
+
+        if (meta.supportsReasoning) {
+          els.toggleReasoning.disabled = false;
+          els.toggleReasoning.checked = true;
+          state.reasoningEnabled = true;
+          els.reasoningHint.textContent = "Supported: Internal reasoning tokens will be captured and rendered into a collapsible container.";
+          els.reasoningHint.style.color = "var(--text-dim)";
+        } else {
+          els.toggleReasoning.checked = false;
+          state.reasoningEnabled = false;
+          els.reasoningHint.textContent = "Notice: Selected model does not emit Chain-of-Thought reasoning tokens. Supported on DeepSeek-R1 models.";
+          els.reasoningHint.style.color = "var(--text-dim)";
+        }
+
+        els.toggleWebSearch.disabled = true;
+        els.toggleWebSearch.checked = false;
+        els.webSearchHint.textContent = "Unsupported: Standard Groq chat endpoints do not natively support server-side web search. Disabled to maintain genuine API transparency.";
+
+        updateContextGauge();
+      }
+
+      /* ==========================================================================
+         GROQ API: VERIFICATION & MODEL DISCOVERY
+         ========================================================================== */
+      async function verifyApiKeyWithGroq() {
+        if (!state.apiKey) {
+          showToast('Please enter an API key to verify', 'error');
+          els.apiKeyInput.focus();
+          return;
+        }
+
+        updateConnectionStatus('testing', 'Validating...');
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/models', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${state.apiKey}`
+            }
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error?.message || `HTTP ${res.status}: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          updateConnectionStatus('live', 'Verified / Live');
+          showToast(`API Key verified! ${data.data?.length || 0} models available`, 'success');
+        } catch (err) {
+          console.error('API Verification error:', err);
+          updateConnectionStatus('error', 'Auth Failed');
+          showToast(`Verification failed: ${err.message}`, 'error', 5000);
+        }
+      }
+
+      async function fetchLiveGroqModels() {
+        if (!state.apiKey) {
+          showToast('Enter your API key first to fetch live models', 'error');
+          els.apiKeyInput.focus();
+          return;
+        }
+
+        const originalBtnText = els.btnFetchModels.textContent;
+        els.btnFetchModels.textContent = '...';
+        els.btnFetchModels.disabled = true;
+
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/models', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${state.apiKey}`
+            }
+          });
+
+          if (!res.ok) {
+            throw new Error(`Failed to load models (HTTP ${res.status})`);
+          }
+
+          const json = await res.json();
+          const modelsList = json.data || [];
+
+          if (modelsList.length === 0) {
+            showToast('No models returned from API', 'info');
+            return;
+          }
+
+          modelsList.sort((a, b) => a.id.localeCompare(b.id));
+
+          const currentVal = els.modelSelect.value;
+          els.modelSelect.innerHTML = '';
+
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = 'Live Groq API Models';
+
+          modelsList.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = m.id + (m.context_window ? ` (${Math.round(m.context_window / 1000)}k)` : '');
+            optGroup.appendChild(opt);
+
+            if (!MODEL_DATA[m.id]) {
+              MODEL_DATA[m.id] = {
+                name: m.id,
+                context: m.context_window || 32768,
+                supportsReasoning: m.id.toLowerCase().includes('r1') || m.id.toLowerCase().includes('reasoning'),
+                desc: `Live model provided by Groq API (owned by ${m.owned_by || 'Groq'}).`
+              };
+            }
+          });
+
+          els.modelSelect.appendChild(optGroup);
+
+          if (modelsList.some(m => m.id === currentVal)) {
+            els.modelSelect.value = currentVal;
+          } else if (modelsList.some(m => m.id === 'llama-3.3-70b-versatile')) {
+            els.modelSelect.value = 'llama-3.3-70b-versatile';
+          }
+
+          state.selectedModel = els.modelSelect.value;
+          updateModelUI();
+          showToast(`Loaded ${modelsList.length} live models from Groq!`, 'success');
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          els.btnFetchModels.textContent = originalBtnText;
+          els.btnFetchModels.disabled = false;
+        }
+      }
+
+      /* ==========================================================================
+         PROMPT ENGINEERING ANALYSER (DYNAMIC HEURISTIC INSPECTOR)
+         ========================================================================== */
+      function analyzePrompt(text) {
+        if (!text || !text.trim()) {
+          updateClassificationUI('ZERO-SHOT', 0, 'No prompt entered yet. Type an instruction or question to inspect prompting techniques.', []);
+          updateTechniqueUI('role', false, null);
+          updateTechniqueUI('negative', false, null);
+          updateTechniqueUI('format', false, null);
+          updateTechniqueUI('cot', false, null);
+          return;
+        }
+
+        const raw = text.trim();
+        const extractedExamples = [];
+
+        // 1. Heuristic Pattern: Input/Output, Q/A, Case/Result, Text/Label pairs
+        const pairRegex = /(?:^|\n)\s*(?:[-*#0-9.)\s]*)\b(Input|Text|Review|Premise|Case|Question|Q|Prompt|Sentence|Source|Sample\s*Input|User)\s*:\s*(.+?)\n\s*(?:[-*#0-9.)\s]*)\b(Output|Answer|A|Label|Result|Target|Sentiment|Category|Translation|Sample\s*Output|Assistant|Response)\s*:\s*([^\n\r]*)/gi;
+
+        let match;
+        while ((match = pairRegex.exec(raw)) !== null) {
+          const inLabel = match[1].trim();
+          const inVal = match[2].trim();
+          const outLabel = match[3].trim();
+          const outVal = match[4].trim();
+
+          // Empty examples should NOT be counted (e.g. trailing query)
+          if (inVal && outVal && outVal.length > 0) {
+            extractedExamples.push({
+              type: `${inLabel} / ${outLabel}`,
+              input: inVal,
+              output: outVal
+            });
+          }
+        }
+
+        // 2. Heuristic Pattern: Arrow / Mapping demonstrations
+        if (extractedExamples.length === 0) {
+          const arrowRegex = new RegExp('(?:^|\\n)\\s*([^\\n\\r:]{2,80}?)\\s*(?:->|=>|-->|==>)\\s*([^\\n\\r]+)', 'g');
+          while ((match = arrowRegex.exec(raw)) !== null) {
+            const left = match[1].trim().replace(/^["']|["']$/g, '');
+            const right = match[2].trim().replace(/^["']|["']$/g, '');
+            if (left && right && !left.startsWith('def ') && !left.startsWith('return')) {
+              extractedExamples.push({
+                type: 'Mapping (->)',
+                input: left,
+                output: right
+              });
+            }
+          }
+        }
+
+        // 3. Heuristic Pattern: Explicit "Example 1:", "Example 2:" blocks
+        if (extractedExamples.length === 0) {
+          const exampleBlockRegex = /(?:Example|Ex|Sample)\s*#?\d*\s*[:\-]\s*([\s\S]+?)(?=(?:Example|Ex|Sample)\s*#?\d*\s*[:\-]|$)/gi;
+          while ((match = exampleBlockRegex.exec(raw)) !== null) {
+            const block = match[1].trim();
+            if (block.length > 8) {
+              const parts = block.split(/\n(?=[A-Za-z]+:)/);
+              if (parts.length >= 2) {
+                extractedExamples.push({
+                  type: 'Example Block',
+                  input: parts[0].trim(),
+                  output: parts.slice(1).join(' ').trim()
+                });
+              } else {
+                extractedExamples.push({
+                  type: 'Example Block',
+                  input: block.substring(0, 60) + (block.length > 60 ? '...' : ''),
+                  output: '[Demonstration Pattern]'
+                });
+              }
+            }
+          }
+        }
+
+        const count = extractedExamples.length;
+        let classification = 'ZERO-SHOT';
+        let explanation = '';
+
+        if (count === 0) {
+          classification = 'ZERO-SHOT';
+          explanation = 'The prompt gives direct instructions or questions without demonstration examples (Zero-Shot Prompting). The model relies purely on pre-trained parametric knowledge.';
+        } else if (count === 1) {
+          classification = 'ONE-SHOT';
+          explanation = 'Detected exactly 1 demonstration exemplar (One-Shot Prompting). The prompt primes the model with a single reference pattern to guide output style and format.';
+        } else {
+          classification = 'FEW-SHOT';
+          explanation = `Detected ${count} demonstration examples (In-Context / Few-Shot Learning). Multiple input-output exemplars prime the model to enforce rigid formatting and improve task accuracy.`;
+        }
+
+        updateClassificationUI(classification, count, explanation, extractedExamples);
+
+        // Analyze Specific Prompting Techniques
+        // 1. Role Prompting
+        const roleRegex = /\b(you are a[n]?\b[\w\s]{2,40}|act as a[n]?\b[\w\s]{2,40}|as an? (?:expert|senior|software|ai|assistant|specialist|consultant)\b[\w\s]{0,30}|assume the role of\b[\w\s]{2,30}|pretend you are\b[\w\s]{2,30})/i;
+        const roleMatch = raw.match(roleRegex);
+        updateTechniqueUI('role', !!roleMatch, roleMatch ? roleMatch[0].trim() : null);
+
+        // 2. Negative Constraints
+        const negRegex = /\b(do not|don't|never|avoid|without(?: using)?|must not|should not|refrain from|strictly no|under no circumstances)\b[\w\s]{0,30}/i;
+        const negMatch = raw.match(negRegex);
+        updateTechniqueUI('negative', !!negMatch, negMatch ? negMatch[0].trim() : null);
+
+        // 3. Output Formatting Instructions
+        const fmtRegex = /\b(json|yaml|markdown|csv|xml|bullet points?|numbered list|table format|return only (?:json|code|text)|format (?:your )?response as|strictly in \w+ format|valid json schema)\b/i;
+        const fmtMatch = raw.match(fmtRegex);
+        updateTechniqueUI('format', !!fmtMatch, fmtMatch ? fmtMatch[0].trim() : null);
+
+        // 4. Chain of Thought
+        const cotRegex = /\b(step[- ]by[- ]step|think (?:step by step|carefully|through)|explain your (?:reasoning|thought process|steps)|chain of thought|walk (?:me )?through|show your work)\b/i;
+        const cotMatch = raw.match(cotRegex);
+        updateTechniqueUI('cot', !!cotMatch, cotMatch ? cotMatch[0].trim() : null);
+      }
+
+      function updateClassificationUI(classification, count, explanation, examples) {
+        els.badgeClassification.textContent = classification;
+        els.badgeClassification.className = 'classification-badge ' + classification.toLowerCase();
+
+        els.exampleCountText.textContent = count === 1 ? '1 example detected' : `${count} examples detected`;
+        els.classificationExplanation.textContent = explanation;
+
+        if (examples.length > 0) {
+          els.detectedPairsWrap.style.display = 'block';
+          els.detectedPairsList.innerHTML = '';
+          examples.forEach((ex, idx) => {
+            const item = document.createElement('div');
+            item.className = 'detected-pair-item';
+            item.innerHTML = `
+              <div class="pair-header">
+                <span>Ex #${idx + 1} (${escapeHtml(ex.type)})</span>
+              </div>
+              <div class="pair-in"><span>In:</span> ${escapeHtml(ex.input)}</div>
+              <div class="pair-out"><span>Out:</span> ${escapeHtml(ex.output)}</div>
+            `;
+            els.detectedPairsList.appendChild(item);
+          });
+        } else {
+          els.detectedPairsWrap.style.display = 'none';
+          els.detectedPairsList.innerHTML = '';
+        }
+      }
+
+      function updateTechniqueUI(type, detected, matchSnippet) {
+        let chipEl, statusEl, matchEl;
+        if (type === 'role') {
+          chipEl = els.chipRole; statusEl = els.statusRole; matchEl = els.matchRole;
+        } else if (type === 'negative') {
+          chipEl = els.chipNegative; statusEl = els.statusNegative; matchEl = els.matchNegative;
+        } else if (type === 'format') {
+          chipEl = els.chipFormat; statusEl = els.statusFormat; matchEl = els.matchFormat;
+        } else if (type === 'cot') {
+          chipEl = els.chipCoT; statusEl = els.statusCoT; matchEl = els.matchCoT;
+        }
+
+        if (detected) {
+          chipEl.classList.add('detected');
+          statusEl.textContent = 'Yes ✓';
+          matchEl.textContent = `"${matchSnippet}"`;
+          matchEl.title = matchSnippet;
+        } else {
+          chipEl.classList.remove('detected');
+          statusEl.textContent = 'No';
+          matchEl.textContent = '—';
+          matchEl.title = '';
+        }
+      }
+
+      /* ==========================================================================
+         STARTER PROMPT TEMPLATES
+         ========================================================================== */
+      function loadPromptTemplate(type) {
+        if (type === 'few-shot') {
+          els.promptInput.value = `Classify the sentiment of the following customer reviews as Positive, Negative, or Neutral.
+
+Review: The phone battery lasts all day and the camera is crystal clear!
+Sentiment: Positive
+
+Review: It broke within two days of arrival. Customer support was unhelpful.
+Sentiment: Negative
+
+Review: It's an okay device. Does what it says on the box, nothing fancy.
+Sentiment: Neutral
+
+Review: Absolutely delighted with the ultra-fast shipping and build quality.
+Sentiment:`;
+        } else if (type === 'one-shot') {
+          els.promptInput.value = `Convert Python list comprehensions to modern JavaScript Array methods.
+
+Python:
+squares = [x**2 for x in numbers if x % 2 == 0]
+
+JavaScript:
+const squares = numbers.filter(x => x % 2 === 0).map(x => x ** 2);
+
+Python:
+names = [user.name.upper() for user in users if user.is_active]
+
+JavaScript:`;
+        } else if (type === 'zero-shot') {
+          els.promptInput.value = `You are an expert distributed systems architect. 
+Design a resilient event-driven architecture using Kafka and Postgres. 
+Do not use esoteric jargon. 
+Return your recommendations formatted strictly in clean Markdown with architecture bullet points and a JSON configuration schema for the dead-letter queue.`;
+        } else if (type === 'cot-math') {
+          els.promptInput.value = `A farmer has 17 sheep. All but 9 suddenly die from illness. 
+How many surviving sheep does the farmer have left? 
+
+Let's think step by step to ensure no logical traps are missed before stating the final answer.`;
+        }
+
+        autoGrowTextarea(els.promptInput);
+        els.promptInput.dispatchEvent(new Event('input'));
+        els.promptInput.focus();
+        showToast('Starter prompt loaded into editor', 'info');
+      }
+
+      /* ==========================================================================
+         GROQ CHAT COMPLETIONS API CALL (REAL SSE STREAMING & REASONING PARSER)
+         ========================================================================== */
+      async function sendPrompt() {
+        const promptText = els.promptInput.value.trim();
+        if (!promptText) {
+          showToast('Please type a prompt first', 'info');
+          els.promptInput.focus();
+          return;
+        }
+
+        if (!state.apiKey) {
+          showToast('Groq API Key required! Enter your key in the left sidebar', 'error', 4500);
+          els.apiKeyInput.focus();
+          return;
+        }
+
+        if (state.isGenerating) return;
+
+        els.emptyState.style.display = 'none';
+
+        addMessageToUI('user', promptText);
+        state.conversation.push({ role: 'user', content: promptText });
+
+        els.promptInput.value = '';
+        autoGrowTextarea(els.promptInput);
+        els.charCountDisplay.textContent = '0 chars';
+        els.tokenEstDisplay.textContent = '~0 tokens';
+        analyzePrompt('');
+
+        setGeneratingState(true);
+
+        const assistantMsgEl = createAssistantMessageElement();
+        els.chatMessages.appendChild(assistantMsgEl);
+        scrollToBottom();
+
+        const messagesPayload = [];
+        if (state.systemPrompt.trim()) {
+          messagesPayload.push({ role: 'system', content: state.systemPrompt.trim() });
+        }
+        state.conversation.forEach(msg => {
+          messagesPayload.push({ role: msg.role, content: msg.content });
+        });
+
+        const requestBody = {
+          model: state.selectedModel,
+          messages: messagesPayload,
+          temperature: state.temperature,
+          max_tokens: state.maxTokens,
+          max_completion_tokens: state.maxTokens,
+          stream: true,
+          stream_options: { include_usage: true }
+        };
+
+        if (state.stopSequences.length > 0) {
+          requestBody.stop = state.stopSequences.slice(0, 4);
+        }
+
+        state.abortController = new AbortController();
+        const startTime = performance.now();
+        let firstTokenTime = null;
+        let rawAccumulatedText = '';
+        let fullReasoning = '';
+        let fullContent = '';
+        let finalUsage = null;
+        let tokenCountEstimate = 0;
+
+        const contentTarget = assistantMsgEl.querySelector('.markdown-body');
+        const thoughtWrap = assistantMsgEl.querySelector('.thought-details');
+        const thoughtContent = assistantMsgEl.querySelector('.thought-content');
+        const metaLine = assistantMsgEl.querySelector('.message-meta');
+
+        try {
+          updateConnectionStatus('live', 'Streaming...');
+
+          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.apiKey}`
+            },
+            body: JSON.stringify(requestBody),
+            signal: state.abortController.signal
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errMsg = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+            throw new Error(errMsg);
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || !trimmed.startsWith('data:')) continue;
+
+              const jsonStr = trimmed.replace(/^data:\s*/, '');
+              if (jsonStr === '[DONE]') break;
+
+              try {
+                const parsed = JSON.parse(jsonStr);
+
+                if (parsed.usage) {
+                  finalUsage = parsed.usage;
+                }
+
+                const choice = parsed.choices?.[0];
+                if (!choice) continue;
+
+                const delta = choice.delta;
+                if (!delta) continue;
+
+                if (firstTokenTime === null && (delta.content || delta.reasoning)) {
+                  firstTokenTime = performance.now();
+                  const ttftMs = Math.round(firstTokenTime - startTime);
+                  els.metricTTFT.textContent = ttftMs;
+                }
+
+                // Delta reasoning support
+                if (delta.reasoning) {
+                  fullReasoning += delta.reasoning;
+                }
+
+                // Delta content support (includes <think> tags for DeepSeek R1)
+                if (delta.content) {
+                  rawAccumulatedText += delta.content;
+                  tokenCountEstimate++;
+                }
+
+                // Parse reasoning from <think> tags or delta.reasoning
+                let visibleText = rawAccumulatedText;
+                if (rawAccumulatedText.includes('<think>')) {
+                  const thinkEndIdx = rawAccumulatedText.indexOf('</think>');
+                  if (thinkEndIdx !== -1) {
+                    const extractedThink = rawAccumulatedText.substring(7, thinkEndIdx).trim();
+                    if (extractedThink) fullReasoning = extractedThink;
+                    visibleText = rawAccumulatedText.substring(thinkEndIdx + 8).trimStart();
+                  } else {
+                    fullReasoning = rawAccumulatedText.substring(7);
+                    visibleText = '';
+                  }
+                }
+
+                if (fullReasoning) {
+                  thoughtWrap.style.display = 'block';
+                  thoughtContent.textContent = fullReasoning;
+                }
+
+                fullContent = visibleText;
+                renderStreamingMarkdown(contentTarget, fullContent);
+
+                const elapsedSec = (performance.now() - startTime) / 1000;
+                if (elapsedSec > 0.1 && tokenCountEstimate > 0) {
+                  const liveTps = (tokenCountEstimate / elapsedSec).toFixed(1);
+                  els.metricTokensPerSec.textContent = liveTps;
+                }
+
+                scrollToBottom();
+
+              } catch (parseErr) {
+                // Ignore JSON parse error on incomplete chunks
+              }
+            }
+          }
+
+          // Generation Completed
+          const endTime = performance.now();
+          const totalDurationSec = ((endTime - startTime) / 1000).toFixed(2);
+          const ttftMs = firstTokenTime ? Math.round(firstTokenTime - startTime) : Math.round(endTime - startTime);
+
+          els.metricDuration.textContent = totalDurationSec;
+
+          // Process Usage metrics
+          let promptToks = finalUsage?.prompt_tokens;
+          let compToks = finalUsage?.completion_tokens;
+          let totalToks = finalUsage?.total_tokens;
+
+          let calculatedSpeed = 0;
+          if (compToks !== undefined && compToks > 0) {
+            const activeGenSec = firstTokenTime ? Math.max(0.01, (endTime - firstTokenTime) / 1000) : parseFloat(totalDurationSec);
+            calculatedSpeed = (compToks / activeGenSec).toFixed(1);
+            els.tokVerifiedBadge.textContent = '✓ Reported by Groq API';
+          } else {
+            compToks = Math.max(1, Math.ceil(fullContent.length / 4));
+            promptToks = Math.max(1, Math.ceil(JSON.stringify(messagesPayload).length / 4));
+            totalToks = promptToks + compToks;
+            calculatedSpeed = (compToks / Math.max(0.1, parseFloat(totalDurationSec))).toFixed(1);
+            els.tokVerifiedBadge.textContent = '~ Estimated (API usage omitted)';
+          }
+
+          els.metricTokensPerSec.textContent = calculatedSpeed;
+          els.tokPromptVal.textContent = promptToks.toLocaleString();
+          els.tokCompVal.textContent = compToks.toLocaleString();
+          els.tokTotalVal.textContent = totalToks.toLocaleString();
+
+          updateContextGauge(totalToks);
+
+          metaLine.textContent = `${state.selectedModel} • ${calculatedSpeed} tokens/s • ${totalDurationSec}s`;
+
+          finalizeMarkdown(contentTarget, fullContent);
+
+          state.conversation.push({
+            role: 'assistant',
+            content: fullContent,
+            reasoning: fullReasoning || null,
+            metrics: {
+              ttft: ttftMs,
+              duration: totalDurationSec,
+              speed: calculatedSpeed,
+              tokens: totalToks
+            }
+          });
+
+          updateConnectionStatus('live', 'Connected / Live');
+
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            metaLine.textContent = `${state.selectedModel} • Generation stopped by user`;
+            finalizeMarkdown(contentTarget, fullContent + '\n\n*(Generation stopped by user)*');
+            showToast('Generation cancelled', 'info');
+          } else {
+            console.error('API Request Error:', err);
+            updateConnectionStatus('error', 'Request Failed');
+            showToast(err.message, 'error', 6000);
+            assistantMsgEl.remove();
+          }
+        } finally {
+          setGeneratingState(false);
+          state.abortController = null;
+        }
+      }
+
+      function stopGeneration() {
+        if (state.abortController) {
+          state.abortController.abort();
+        }
+      }
+
+      function setGeneratingState(generating) {
+        state.isGenerating = generating;
+        if (generating) {
+          els.btnSendPrompt.style.display = 'none';
+          els.btnStopGen.style.display = 'inline-flex';
+          els.btnResetTop.disabled = true;
+        } else {
+          els.btnSendPrompt.style.display = 'inline-flex';
+          els.btnStopGen.style.display = 'none';
+          els.btnResetTop.disabled = false;
+        }
+      }
+
+      /* ==========================================================================
+         MESSAGE RENDERING & MARKDOWN HIGHLIGHTING
+         ========================================================================== */
+      function addMessageToUI(role, content) {
+        const row = document.createElement('div');
+        row.className = 'message-row';
+
+        const avatar = document.createElement('div');
+        avatar.className = `message-avatar ${role}-avatar`;
+        avatar.innerHTML = role === 'user'
+          ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
+          : '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>';
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.className = 'message-body-wrap';
+
+        const headerLine = document.createElement('div');
+        headerLine.className = 'message-header-line';
+        headerLine.innerHTML = `
+          <span class="message-sender">${role === 'user' ? 'You' : 'Groq Assistant'}</span>
+          <span class="message-meta">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        `;
+
+        const bubble = document.createElement('div');
+        bubble.className = `message-bubble ${role}-bubble`;
+        bubble.textContent = content;
+
+        bodyWrap.appendChild(headerLine);
+        bodyWrap.appendChild(bubble);
+        row.appendChild(avatar);
+        row.appendChild(bodyWrap);
+
+        els.chatMessages.appendChild(row);
+        scrollToBottom();
+      }
+
+      function createAssistantMessageElement() {
+        const row = document.createElement('div');
+        row.className = 'message-row';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar assistant-avatar';
+        avatar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>';
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.className = 'message-body-wrap';
+
+        const headerLine = document.createElement('div');
+        headerLine.className = 'message-header-line';
+        headerLine.innerHTML = `
+          <span class="message-sender">Groq Assistant</span>
+          <span class="message-meta">${state.selectedModel} • Generating...</span>
+        `;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble assistant-bubble';
+
+        const thoughtDetails = document.createElement('details');
+        thoughtDetails.className = 'thought-details';
+        thoughtDetails.style.display = 'none';
+        thoughtDetails.open = true;
+        thoughtDetails.innerHTML = `
+          <summary class="thought-summary">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54z"></path>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54z"></path>
+            </svg>
+            <span>Thinking Process</span>
+          </summary>
+          <div class="thought-content"></div>
+        `;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'markdown-body';
+        contentDiv.innerHTML = '<span class="streaming-cursor"></span>';
+
+        const footerActions = document.createElement('div');
+        footerActions.className = 'message-footer-actions';
+        footerActions.innerHTML = `
+          <button type="button" class="msg-action-btn" onclick="copyMessageText(this)" title="Copy response text">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+        `;
+
+        bubble.appendChild(thoughtDetails);
+        bubble.appendChild(contentDiv);
+        bubble.appendChild(footerActions);
+
+        bodyWrap.appendChild(headerLine);
+        bodyWrap.appendChild(bubble);
+        row.appendChild(avatar);
+        row.appendChild(bodyWrap);
+
+        return row;
+      }
+
+      function renderStreamingMarkdown(el, text) {
+        if (!text) {
+          el.innerHTML = '<span class="streaming-cursor"></span>';
+          return;
+        }
+        if (window.marked) {
+          try {
+            el.innerHTML = marked.parse(text) + '<span class="streaming-cursor"></span>';
+            return;
+          } catch (e) { }
+        }
+        el.innerHTML = escapeHtml(text).replace(/\n/g, '<br>') + '<span class="streaming-cursor"></span>';
+      }
+
+      function finalizeMarkdown(el, text) {
+        if (window.marked) {
+          try {
+            el.innerHTML = marked.parse(text);
+            el.querySelectorAll('pre code').forEach((codeBlock) => {
+              if (window.hljs) {
+                hljs.highlightElement(codeBlock);
+              }
+              wrapCodeBlockWithHeader(codeBlock);
+            });
+            return;
+          } catch (e) {
+            console.warn('Finalize markdown error:', e);
+          }
+        }
+        el.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+      }
+
+      function wrapCodeBlockWithHeader(codeBlock) {
+        const pre = codeBlock.parentElement;
+        if (!pre || pre.parentElement.classList.contains('code-block-wrapper')) return;
+
+        let lang = 'code';
+        codeBlock.classList.forEach(cls => {
+          if (cls.startsWith('language-')) lang = cls.replace('language-', '');
+        });
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+
+        const header = document.createElement('div');
+        header.className = 'code-block-header';
+        header.innerHTML = `
+          <span>${escapeHtml(lang)}</span>
+          <button type="button" class="copy-btn" onclick="copyCodeSnippet(this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+        `;
+
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+      }
+
+      function scrollToBottom() {
+        els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+      }
+
+      window.copyCodeSnippet = function (btn) {
+        const pre = btn.closest('.code-block-wrapper').querySelector('pre code');
+        if (!pre) return;
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+          btn.innerHTML = '<span>Copied!</span>';
+          setTimeout(() => {
+            btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy</span>';
+          }, 2000);
+        });
+      };
+
+      window.copyMessageText = function (btn) {
+        const bubble = btn.closest('.message-bubble');
+        const markdownBody = bubble.querySelector('.markdown-body');
+        if (!markdownBody) return;
+        navigator.clipboard.writeText(markdownBody.innerText).then(() => {
+          btn.innerHTML = '<span>Copied!</span>';
+          setTimeout(() => {
+            btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy</span>';
+          }, 2000);
+        });
+      };
+
+      /* ==========================================================================
+         CONTEXT WINDOW GAUGE
+         ========================================================================== */
+      function updateContextGauge(totalTokens) {
+        const meta = MODEL_DATA[state.selectedModel] || { context: 32768 };
+        const maxLimit = meta.context;
+
+        if (totalTokens === undefined) {
+          totalTokens = 0;
+          state.conversation.forEach(m => {
+            totalTokens += Math.ceil(m.content.length / 4);
+          });
+        }
+
+        const pct = Math.min(100, (totalTokens / maxLimit) * 100).toFixed(1);
+        els.contextPctDisplay.textContent = `${pct}%`;
+        els.contextBarFill.style.width = `${pct}%`;
+      }
+
+      /* ==========================================================================
+         RESET CONVERSATION
+         ========================================================================== */
+      function resetConversation() {
+        if (state.isGenerating) {
+          showToast('Cannot reset while model is generating', 'error');
+          return;
+        }
+
+        state.conversation = [];
+        els.chatMessages.innerHTML = '';
+        els.chatMessages.appendChild(els.emptyState);
+        els.emptyState.style.display = 'flex';
+
+        els.metricTTFT.textContent = '—';
+        els.metricDuration.textContent = '—';
+        els.metricTokensPerSec.textContent = '0.0';
+        els.tokPromptVal.textContent = '—';
+        els.tokCompVal.textContent = '—';
+        els.tokTotalVal.textContent = '—';
+        els.contextPctDisplay.textContent = '0.0%';
+        els.contextBarFill.style.width = '0%';
+        els.tokVerifiedBadge.textContent = 'Awaiting request';
+
+        showToast('Conversation reset', 'info');
+      }
+
+      /* ==========================================================================
+         VIEW CODE EXPORT FEATURE
+         ========================================================================== */
+      function openCodeModal() {
+        renderCodeSnippet();
+        els.codeModalOverlay.classList.add('active');
+      }
+
+      function closeCodeModal() {
+        els.codeModalOverlay.classList.remove('active');
+      }
+
+      function renderCodeSnippet() {
+        const tab = state.activeCodeTab;
+        const model = state.selectedModel;
+        const temp = state.temperature;
+        const maxTokens = state.maxTokens;
+        const stop = state.stopSequences;
+
+        const msgs = [];
+        if (state.systemPrompt.trim()) {
+          msgs.push({ role: 'system', content: state.systemPrompt.trim() });
+        }
+        if (state.conversation.length > 0) {
+          state.conversation.forEach(m => {
+            msgs.push({ role: m.role, content: m.content });
+          });
+        } else if (els.promptInput.value.trim()) {
+          msgs.push({ role: 'user', content: els.promptInput.value.trim() });
+        } else {
+          msgs.push({ role: 'user', content: 'Explain quantum computing in one sentence.' });
+        }
+
+        let code = '';
+
+        if (tab === 'curl') {
+          const payload = {
+            model: model,
+            messages: msgs,
+            temperature: temp,
+            max_tokens: maxTokens
+          };
+          if (stop.length > 0) payload.stop = stop;
+
+          code = `curl -X POST "https://api.groq.com/openai/v1/chat/completions" \\
+  -H "Authorization: Bearer YOUR_GROQ_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(payload, null, 2)}'`;
+
+        } else if (tab === 'python-sdk') {
+          code = `import os
+from groq import Groq
+
+# Initialize client (uses GROQ_API_KEY from environment)
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY", "YOUR_GROQ_API_KEY"),
+)
+
+chat_completion = client.chat.completions.create(
+    model="${model}",
+    messages=${JSON.stringify(msgs, null, 4)},
+    temperature=${temp},
+    max_tokens=${maxTokens},${stop.length > 0 ? `\n    stop=${JSON.stringify(stop)},` : ''}
+    stream=True,
+)
+
+for chunk in chat_completion:
+    print(chunk.choices[0].delta.content or "", end="")
+`;
+
+        } else if (tab === 'python-req') {
+          code = `import os
+import requests
+
+url = "https://api.groq.com/openai/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY', 'YOUR_GROQ_API_KEY')}",
+    "Content-Type": "application/json"
+}
+payload = {
+    "model": "${model}",
+    "messages": ${JSON.stringify(msgs, null, 4)},
+    "temperature": ${temp},
+    "max_tokens": ${maxTokens}${stop.length > 0 ? `,\n    "stop": ${JSON.stringify(stop)}` : ''}
+}
+
+response = requests.post(url, headers=headers, json=payload)
+data = response.json()
+print(data["choices"][0]["message"]["content"])
+`;
+
+        } else if (tab === 'js-fetch') {
+          code = `async function callGroqAPI() {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer YOUR_GROQ_API_KEY",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "${model}",
+      messages: ${JSON.stringify(msgs, null, 6)},
+      temperature: ${temp},
+      max_tokens: ${maxTokens},${stop.length > 0 ? `\n      stop: ${JSON.stringify(stop)},` : ''}
+      stream: true
+    })
+  });
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value);
+    console.log(chunk);
+  }
+}
+
+callGroqAPI();
+`;
+
+        } else if (tab === 'node-sdk') {
+          code = `import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "YOUR_GROQ_API_KEY"
+});
+
+async function main() {
+  const stream = await groq.chat.completions.create({
+    model: "${model}",
+    messages: ${JSON.stringify(msgs, null, 4)},
+    temperature: ${temp},
+    max_tokens: ${maxTokens},${stop.length > 0 ? `\n    stop: ${JSON.stringify(stop)},` : ''}
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    process.stdout.write(chunk.choices[0]?.delta?.content || "");
+  }
+}
+
+main();
+`;
+        }
+
+        els.modalCodeDisplay.textContent = code;
+        if (window.hljs) {
+          hljs.highlightElement(els.modalCodeDisplay);
+        }
+      }
+
+      /* ==========================================================================
+         UTILITY FUNCTIONS
+         ========================================================================== */
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
+
+    })();
+  </script>
+</body>
+
+</html>
